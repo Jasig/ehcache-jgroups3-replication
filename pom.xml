@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <artifactId>ehcache-parent</artifactId>
         <groupId>net.sf.ehcache</groupId>
@@ -11,7 +9,7 @@
     <groupId>org.jasig.ehcache</groupId>
     <artifactId>ehcache-jgroups3replication</artifactId>
     <name>JGroups Replication</name>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.7</version>
     <packaging>jar</packaging>
     <description>This module provides replication via JGroups 3</description>
     <properties>
@@ -20,7 +18,7 @@
 	  <scm>
 	    <connection>scm:git:git@github.com:Jasig/ehcache-jgroups3-replication.git</connection>
 	    <developerConnection>scm:git:git@github.com:Jasig/ehcache-jgroups3-replication.git</developerConnection>
-	    <tag></tag>
+	    <tag />
 	    <url>https://github.com/Jasig/ehcache-jgroups3-replication</url>
 	  </scm>
     <distributionManagement>
