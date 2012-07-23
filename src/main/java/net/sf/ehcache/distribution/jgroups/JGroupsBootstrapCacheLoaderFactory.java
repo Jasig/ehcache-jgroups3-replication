@@ -17,13 +17,13 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
-import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
+import java.util.Properties;
+
 import net.sf.ehcache.bootstrap.BootstrapCacheLoaderFactory;
 import net.sf.ehcache.util.PropertyUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
 
 
 /**
@@ -32,7 +32,7 @@ import java.util.Properties;
  * @author Greg Luck
  * @version $Id$
  */
-public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFactory {
+public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFactory<JGroupsBootstrapCacheLoader> {
 
     /**
      * The property name expected in ehcache.xml for the bootstrap asynchronously switch.
@@ -70,7 +70,7 @@ public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFact
      * @return a constructed BootstrapCacheLoader
      */
     @Override
-    public BootstrapCacheLoader createBootstrapCacheLoader(Properties properties) {
+    public JGroupsBootstrapCacheLoader createBootstrapCacheLoader(Properties properties) {
         if (properties == null) {
             LOG.debug("Creating JGroups BootstrapCacheLoader with default configuration.");
         } else {

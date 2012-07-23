@@ -16,13 +16,15 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-
 import net.sf.ehcache.util.CacheTransactionHelper;
+
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
@@ -188,15 +190,14 @@ public class JGroupsCacheReceiver implements Receiver {
     /**
      * {@inheritDoc}
      */
-    public byte[] getState() {
+    public void getState(OutputStream output) throws Exception {
         //Not Implemented
-        return null;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setState(byte[] state) {
+    public void setState(InputStream input) throws Exception {
         //Not Implemented
     }
 
@@ -204,6 +205,13 @@ public class JGroupsCacheReceiver implements Receiver {
      * {@inheritDoc}
      */
     public void block() {
+        //Not Implemented
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void unblock() {
         //Not Implemented
     }
 

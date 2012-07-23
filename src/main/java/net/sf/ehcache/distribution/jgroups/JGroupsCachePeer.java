@@ -16,18 +16,6 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
-import net.sf.ehcache.Element;
-import net.sf.ehcache.distribution.CachePeer;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.ChannelClosedException;
-import org.jgroups.ChannelNotConnectedException;
-import org.jgroups.Message;
-import org.jgroups.View;
-import org.jgroups.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -40,9 +28,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
+import net.sf.ehcache.Element;
+import net.sf.ehcache.distribution.CachePeer;
+
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.Message;
+import org.jgroups.View;
+import org.jgroups.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Handles {@link CachePeer}functions around a JGroups {@link Channel} and a
- * {@link CacheManager}
+ * {@link net.sf.ehcache.CacheManager}
  *
  * @author Eric Dalquist
  * @version $Revision$
@@ -70,7 +69,7 @@ public class JGroupsCachePeer implements CachePeer {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void send(List eventMessages) throws RemoteException {
         this.send(null, eventMessages);
     }
@@ -210,10 +209,8 @@ public class JGroupsCachePeer implements CachePeer {
         final Message msg = new Message(dest, null, data);
         try {
             this.channel.send(msg);
-        } catch (ChannelNotConnectedException e) {
-            LOG.error("Failed to send message(s) due to the channel being disconnected: " + toSend, e);
-        } catch (ChannelClosedException e) {
-            LOG.error("Failed to send message(s) due to the channel being closed: " + toSend, e);
+        } catch (Exception e) {
+            LOG.error("Failed to send message(s) due to the channel being disconnected or closed: " + toSend, e);
         }
     }
 
@@ -277,8 +274,8 @@ public class JGroupsCachePeer implements CachePeer {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
-    public List<?> getElements(List keys) throws RemoteException {
+    @SuppressWarnings("rawtypes")
+    public List getElements(List keys) throws RemoteException {
         //Not Implemented
         return null;
     }

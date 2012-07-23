@@ -1,6 +1,6 @@
 
 <!--
-  This configuration file is from the JGroups 2.10.0.GA release package. The only changes are:
+  This configuration file is from the JGroups 3.0.9.Final release package. The only changes are:
   * Add mcast_addr attribute to UDP
   * Change mcast_port attribute to UDP
   * Change mcast_ttl attribute to UDP
@@ -13,7 +13,7 @@
 
 <config xmlns="urn:org:jgroups"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-2.8.xsd">
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.0.xsd">
     <UDP
          mcast_addr="231.12.21.132"
          mcast_port="45566"
@@ -30,7 +30,12 @@
          enable_bundling="true"
          enable_diagnostics="true"
          thread_naming_pattern="cl"
-         timer.num_threads="4"
+
+         timer_type="new"
+         timer.min_threads="4"
+         timer.max_threads="10"
+         timer.keep_alive_time="3000"
+         timer.queue_max_size="500"
 
          thread_pool.enabled="true"
          thread_pool.min_threads="2"
@@ -56,21 +61,20 @@
     <FD_ALL/>
     <VERIFY_SUSPECT timeout="1500"  />
     <BARRIER />
-    <pbcast.NAKACK use_stats_for_retransmission="false"
-                   exponential_backoff="0"
-                   use_mcast_xmit="true" gc_lag="0"
-                   retransmit_timeout="300,600,1200"
+    <pbcast.NAKACK exponential_backoff="300"
+                   xmit_stagger_timeout="200"
+                   use_mcast_xmit="false"
                    discard_delivered_msgs="true"/>
-    <UNICAST timeout="300,600,1200"/>
+    <UNICAST />
     <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
-                   max_bytes="1M"/>
-    <pbcast.GMS print_local_addr="false" join_timeout="3000"
-
+                   max_bytes="4M"/>
+    <pbcast.GMS print_local_addr="true" join_timeout="3000"
                 view_bundling="true"/>
-    <FC max_credits="500K"
-                    min_threshold="0.20"/>
+    <UFC max_credits="2M"
+         min_threshold="0.4"/>
+    <MFC max_credits="2M"
+         min_threshold="0.4"/>
     <FRAG2 frag_size="60K"  />
-    <!--pbcast.STREAMING_STATE_TRANSFER /-->
-    <pbcast.STATE_TRANSFER  />
+    <pbcast.STATE_TRANSFER />
     <!-- pbcast.FLUSH  /-->
 </config>

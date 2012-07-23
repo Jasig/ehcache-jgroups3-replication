@@ -17,6 +17,12 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import javax.management.MBeanServer;
+
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -24,17 +30,11 @@ import net.sf.ehcache.Status;
 import net.sf.ehcache.distribution.CacheManagerPeerProvider;
 import net.sf.ehcache.distribution.CachePeer;
 import net.sf.ehcache.management.ManagedCacheManagerPeerProvider;
-import org.jgroups.Channel;
-import org.jgroups.ChannelException;
+
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.management.MBeanServer;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * The main Jgroup class for replication via JGroup. Starts up the Jgroup communication bus and listen for message in
@@ -138,7 +138,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
             } else {
                 channel = new JChannel();
             }
-        } catch (ChannelException e) {
+        } catch (Exception e) {
             LOG.error("Failed to create JGroups Channel, replication will not function. JGroups properties:\n" + this.groupProperties, e);
             this.dispose();
             return;
@@ -150,11 +150,10 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
         this.bootstrapManager = new JGroupsBootstrapManager(clusterName, this.cachePeer, this.cacheManager);
         this.cacheReceiver = new JGroupsCacheReceiver(this.cacheManager, this.bootstrapManager);
         this.channel.setReceiver(this.cacheReceiver);
-        this.channel.setOpt(Channel.LOCAL, Boolean.FALSE);
         
         try {
             this.channel.connect(clusterName);
-        } catch (ChannelException e) {
+        } catch (Exception e) {
             LOG.error("Failed to connect to JGroups cluster '" + clusterName + 
                     "', replication will not function. JGroups properties:\n" + this.groupProperties, e);
             this.dispose();
@@ -278,6 +277,13 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
         //Ignore, only used for RMI
     }
     
+    /**
+     * @return The underlying JGroups JChannel
+     */
+    public JChannel getChannel() {
+        return channel;
+    }
+
     /**
      * @return the JGroupsBootstrapManager
      */
