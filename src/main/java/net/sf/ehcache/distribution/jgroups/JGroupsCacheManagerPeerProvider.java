@@ -150,6 +150,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
         this.bootstrapManager = new JGroupsBootstrapManager(clusterName, this.cachePeer, this.cacheManager);
         this.cacheReceiver = new JGroupsCacheReceiver(this.cacheManager, this.bootstrapManager);
         this.channel.setReceiver(this.cacheReceiver);
+        this.channel.setDiscardOwnMessages(true);
         
         try {
             this.channel.connect(clusterName);
