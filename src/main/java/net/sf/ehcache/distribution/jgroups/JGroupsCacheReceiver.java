@@ -21,10 +21,16 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-
+import net.sf.ehcache.distribution.jgroups.jmx.JGroupsCacheReceiverStatsCounter;
+import net.sf.ehcache.distribution.jgroups.jmx.JGroupsCacheReceiverStats;
+import net.sf.ehcache.distribution.jgroups.jmx.NullJGroupsCacheReceiverStats;
 import net.sf.ehcache.util.CacheTransactionHelper;
+
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
@@ -43,6 +49,10 @@ public class JGroupsCacheReceiver implements Receiver {
 
     private final CacheManager cacheManager;
     private final JGroupsBootstrapManager bootstrapManager;
+    
+    private MBeanServer mBeanServer;
+    private ObjectName objectName;
+    private JGroupsCacheReceiverStatsCounter cacheReceiverStats = new NullJGroupsCacheReceiverStats();
 
     /**
      * Create a new {@link Receiver}
@@ -50,6 +60,43 @@ public class JGroupsCacheReceiver implements Receiver {
     public JGroupsCacheReceiver(CacheManager cacheManager, JGroupsBootstrapManager bootstrapManager) {
         this.cacheManager = cacheManager;
         this.bootstrapManager = bootstrapManager;
+    }
+    
+    /**
+     * Register with an MBeanServer
+     */
+    public void register(MBeanServer mBeanServer) {
+        this.mBeanServer = mBeanServer;
+        
+        //Replace NULL impl with real impl
+        this.cacheReceiverStats = new JGroupsCacheReceiverStats();
+        try {
+            this.objectName = ObjectName.getInstance("net.sf.ehcache:type=JGroupsStatistics,CacheManager=" + this.cacheManager.getName()
+                    + ",name=JGroupsCacheReceiver");
+            
+            this.mBeanServer.registerMBean(
+                    cacheReceiverStats, 
+                    objectName);
+            
+            LOG.debug("Registered JGroups Cache Receiver with MBeanServer under {}", this.objectName);
+        } catch (Exception e) {
+            LOG.error("Error occured while registering JGroupsCacheReceiver MBean. JGroupsCacheReceiver Statistics will not be enabled.",
+                    e);
+        }
+    }
+
+    /**
+     * Shutdown the cache peer reciever
+     */
+    public void dispose() {
+        if (this.mBeanServer != null) {
+            try {
+                this.mBeanServer.unregisterMBean(this.objectName);
+                
+            } catch (Exception e) {
+                LOG.error("Error occured while unregistering JGroupsCacheReceiver MBean. " + this.objectName, e);
+            }
+        }
     }
 
     /**
@@ -121,21 +168,25 @@ public class JGroupsCacheReceiver implements Receiver {
 
         switch (message.getEvent()) {
             case JGroupEventMessage.BOOTSTRAP_REQUEST: {
+                this.cacheReceiverStats.countBootstrapRequest();
                 LOG.debug("received bootstrap request:    from {} for cache={}", message.getSerializableKey(), cacheName);
                 this.bootstrapManager.sendBootstrapResponse(message);
                 break;
             }
             case JGroupEventMessage.BOOTSTRAP_COMPLETE: {
+                this.cacheReceiverStats.countBootstrapComplete();
                 LOG.debug("received bootstrap complete:   cache={}", cacheName);
                 this.bootstrapManager.handleBootstrapComplete(message);
                 break;
             }
             case JGroupEventMessage.BOOTSTRAP_INCOMPLETE: {
+                this.cacheReceiverStats.countBootstrapIncomplete();
                 LOG.debug("received bootstrap incomplete: cache={}", cacheName);
                 this.bootstrapManager.handleBootstrapIncomplete(message);
                 break;
             }
             case JGroupEventMessage.BOOTSTRAP_RESPONSE: {
+                this.cacheReceiverStats.countBootstrapResponse();
                 final Serializable serializableKey = message.getSerializableKey();
                 LOG.debug("received bootstrap reply:      cache={}, key={}", cacheName, serializableKey);
                 this.bootstrapManager.handleBootstrapResponse(message);
@@ -157,6 +208,7 @@ public class JGroupsCacheReceiver implements Receiver {
         
         switch (message.getEvent()) {
             case JGroupEventMessage.REMOVE_ALL: {
+                this.cacheReceiverStats.countRemoveAll();
                 LOG.debug("received remove all:      cache={}", cacheName);
                 cache.removeAll(true);
                 break;
@@ -164,15 +216,18 @@ public class JGroupsCacheReceiver implements Receiver {
             case JGroupEventMessage.REMOVE: {
                 final Serializable serializableKey = message.getSerializableKey();
                 if (cache.getQuiet(serializableKey) != null) {
+                    this.cacheReceiverStats.countRemoveExisting();
                     LOG.debug("received remove:          cache={}, key={}", cacheName, serializableKey);
                     cache.remove(serializableKey, true);
                 } else if (LOG.isTraceEnabled()) {
+                    this.cacheReceiverStats.countRemoveNotExisting();
                     LOG.trace("received remove:          cache={}, key={} - Ignoring, key is not in the local cache.", 
                             cacheName, serializableKey);
                 }
                 break;
             }
             case JGroupEventMessage.PUT: {
+                this.cacheReceiverStats.countPut();
                 final Serializable serializableKey = message.getSerializableKey();
                 LOG.debug("received put:             cache={}, key={}", cacheName, serializableKey);
                 cache.put(message.getElement(), true);
