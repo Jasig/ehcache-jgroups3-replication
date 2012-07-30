@@ -19,6 +19,11 @@ package net.sf.ehcache.distribution.jgroups.jmx;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import net.sf.ehcache.distribution.jgroups.JGroupsCacheReceiver;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
+
 /**
  * Tracks JGroupsCacheReceiver Statistics
  * 
@@ -28,17 +33,26 @@ public class JGroupsCacheReceiverStats implements
         JGroupsCacheReceiverStatsMBean, JGroupsCacheReceiverStatsCounter {
     
     private final AtomicLong removeAllCount = new AtomicLong();
-    private final AtomicRate removeAllRate = new AtomicRate(1, TimeUnit.SECONDS);
-    
+    private final Meter removeAllRate = Metrics.newMeter(JGroupsCacheReceiver.class,
+            "removeAll",
+            "removeAll",
+            TimeUnit.SECONDS);
+
     private final AtomicLong removeExistingCount = new AtomicLong();
-    private final AtomicRate removeExistingRate = new AtomicRate(1, TimeUnit.SECONDS);
-    
+    private final Meter removeExistingRate = Metrics.newMeter(JGroupsCacheReceiver.class,
+            "removeExisting",
+            "removeExisting",
+            TimeUnit.SECONDS);
+
     private final AtomicLong removeNotExistingCount = new AtomicLong();
-    private final AtomicRate removeNotExistingRate = new AtomicRate(1, TimeUnit.SECONDS);
-    
+    private final Meter removeNotExistingRate = Metrics.newMeter(JGroupsCacheReceiver.class,
+            "removeNotExisting",
+            "removeNotExisting",
+            TimeUnit.SECONDS);
+
     private final AtomicLong putCount = new AtomicLong();
-    private final AtomicRate putRate = new AtomicRate(1, TimeUnit.SECONDS);
-    
+    private final Meter putRate = Metrics.newMeter(JGroupsCacheReceiver.class, "put", "put", TimeUnit.SECONDS);
+ 
     private final AtomicLong bootstrapRequestCount = new AtomicLong();
     private final AtomicLong bootstrapResponseCount = new AtomicLong();
     private final AtomicLong bootstrapCompleteCount = new AtomicLong();
@@ -51,7 +65,7 @@ public class JGroupsCacheReceiverStats implements
     @Override
     public void countRemoveAll() {
         this.removeAllCount.incrementAndGet();
-        this.removeAllRate.count();
+        this.removeAllRate.mark();
     }
 
     /**
@@ -67,7 +81,7 @@ public class JGroupsCacheReceiverStats implements
      */
     @Override
     public double getRemoveAllRate() {
-        return removeAllRate.getRate();
+        return removeAllRate.oneMinuteRate();
     }
     
     /**
@@ -76,7 +90,7 @@ public class JGroupsCacheReceiverStats implements
     @Override
     public void countRemoveExisting() {
         this.removeExistingCount.incrementAndGet();
-        this.removeExistingRate.count();
+        this.removeExistingRate.mark();
     }
 
     /**
@@ -92,7 +106,7 @@ public class JGroupsCacheReceiverStats implements
      */
     @Override
     public double getRemoveExistingRate() {
-        return this.removeExistingRate.getRate();
+        return this.removeExistingRate.oneMinuteRate();
     }
     
     /**
@@ -101,7 +115,7 @@ public class JGroupsCacheReceiverStats implements
     @Override
     public void countRemoveNotExisting() {
         this.removeNotExistingCount.incrementAndGet();
-        this.removeNotExistingRate.count();
+        this.removeNotExistingRate.mark();
     }
 
     /**
@@ -117,7 +131,7 @@ public class JGroupsCacheReceiverStats implements
      */
     @Override
     public double getRemoveNotExistingRate() {
-        return this.removeNotExistingRate.getRate();
+        return this.removeNotExistingRate.oneMinuteRate();
     }
     
     /**
@@ -126,7 +140,7 @@ public class JGroupsCacheReceiverStats implements
     @Override
     public void countPut() {
         this.putCount.incrementAndGet();
-        this.putRate.count();
+        this.putRate.mark();
     }
 
     /**
@@ -142,7 +156,7 @@ public class JGroupsCacheReceiverStats implements
      */
     @Override
     public double getPutRate() {
-        return this.putRate.getRate();
+        return this.putRate.oneMinuteRate();
     }
 
     /**
