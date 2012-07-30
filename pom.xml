@@ -9,7 +9,7 @@
     <groupId>org.jasig.ehcache</groupId>
     <artifactId>ehcache-jgroups3replication</artifactId>
     <name>JGroups Replication</name>
-    <version>1.7.4-SNAPSHOT</version>
+    <version>1.7.4</version>
     <packaging>jar</packaging>
     <description>This module provides replication via JGroups 3</description>
     <properties>
@@ -18,7 +18,7 @@
 	  <scm>
 	    <connection>scm:git:git@github.com:Jasig/ehcache-jgroups3-replication.git</connection>
 	    <developerConnection>scm:git:git@github.com:Jasig/ehcache-jgroups3-replication.git</developerConnection>
-	    <tag></tag>
+	    <tag />
 	    <url>https://github.com/Jasig/ehcache-jgroups3-replication</url>
 	  </scm>
     <distributionManagement>
