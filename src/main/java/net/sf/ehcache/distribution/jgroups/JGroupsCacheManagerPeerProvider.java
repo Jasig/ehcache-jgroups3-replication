@@ -17,6 +17,12 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import javax.management.MBeanServer;
+
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -24,15 +30,11 @@ import net.sf.ehcache.Status;
 import net.sf.ehcache.distribution.CacheManagerPeerProvider;
 import net.sf.ehcache.distribution.CachePeer;
 import net.sf.ehcache.management.ManagedCacheManagerPeerProvider;
+
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.management.MBeanServer;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * The main Jgroup class for replication via JGroup. Starts up the Jgroup communication bus and listen for message in
@@ -178,7 +180,9 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
             LOG.debug("Registered JGroups channel with MBeanServer under domain {} with name {}", JMX_DOMAIN_NAME, clusterName);
         } catch (Exception e) {
             LOG.error("Error occured while registering MBeans. Management of JGroups will not be enabled.", e);
-        }        
+        }
+        
+        this.cacheReceiver.register(mBeanServer);
     }
 
     /**
@@ -198,6 +202,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
     private void shutdownCachePeer() {
         if (this.cachePeer != null) {
             this.cachePeersListCache = null;
+            this.cacheReceiver.dispose();
             this.cacheReceiver = null;
             this.cachePeer.dispose();
             this.cachePeer = null;
